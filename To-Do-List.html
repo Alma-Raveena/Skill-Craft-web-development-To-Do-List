@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .list-container {
+      margin-bottom: 20px;
+    }
+
+    .list-container input {
+      padding: 5px;
+      width: 250px;
+    }
+
+    .list-container button {
+      padding: 5px 10px;
+    }
+
+    .task-list {
+      margin-top: 20px;
+    }
+
+    .task {
+      background: white;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .task.completed .task-name {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .task input[type="text"] {
+      border: none;
+      background: transparent;
+      font-size: 16px;
+    }
+
+    .task input[type="datetime-local"] {
+      font-size: 12px;
+    }
+
+    .task button {
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📝 To-Do App</h1>
+
+  <div class="list-container">
+    <input type="text" id="newListName" placeholder="New List Name">
+    <button onclick="createList()">Add List</button>
+  </div>
+
+  <div id="lists"></div>
+
+  <script>
+    let lists = {};
+
+    function createList() {
+      const listName = document.getElementById('newListName').value.trim();
+      if (listName === '' || lists[listName]) return;
+
+      lists[listName] = [];
+      const listDiv = document.createElement('div');
+      listDiv.className = 'task-list';
+      listDiv.id = `list-${listName}`;
+
+      listDiv.innerHTML = `
+        <h3>${listName}</h3>
+        <input type="text" id="task-${listName}" placeholder="New Task">
+        <input type="datetime-local" id="datetime-${listName}">
+        <button onclick="addTask('${listName}')">Add Task</button>
+        <div id="tasks-${listName}"></div>
+      `;
+
+      document.getElementById('lists').appendChild(listDiv);
+      document.getElementById('newListName').value = '';
+    }
+
+    function addTask(listName) {
+      const taskName = document.getElementById(`task-${listName}`).value.trim();
+      const datetime = document.getElementById(`datetime-${listName}`).value;
+
+      if (taskName === '') return;
+
+      const task = {
+        name: taskName,
+        completed: false,
+        datetime: datetime
+      };
+
+      lists[listName].push(task);
+      renderTasks(listName);
+
+      document.getElementById(`task-${listName}`).value = '';
+      document.getElementById(`datetime-${listName}`).value = '';
+    }
+
+    function renderTasks(listName) {
+      const taskDiv = document.getElementById(`tasks-${listName}`);
+      taskDiv.innerHTML = '';
+
+      lists[listName].forEach((task, index) => {
+        const div = document.createElement('div');
+        div.className = `task ${task.completed ? 'completed' : ''}`;
+        
+        div.innerHTML = `
+          <span class="task-name">
+            <input type="text" value="${task.name}" onchange="editTask('${listName}', ${index}, this.value)">
+          </span>
+          <span>
+            <input type="datetime-local" value="${task.datetime}" onchange="updateTime('${listName}', ${index}, this.value)">
+            <button onclick="toggleComplete('${listName}', ${index})">${task.completed ? 'Undo' : '✔️'}</button>
+            <button onclick="deleteTask('${listName}', ${index})">🗑️</button>
+          </span>
+        `;
+        taskDiv.appendChild(div);
+      });
+    }
+
+    function toggleComplete(listName, index) {
+      lists[listName][index].completed = !lists[listName][index].completed;
+      renderTasks(listName);
+    }
+
+    function deleteTask(listName, index) {
+      lists[listName].splice(index, 1);
+      renderTasks(listName);
+    }
+
+    function editTask(listName, index, newName) {
+      lists[listName][index].name = newName;
+    }
+
+    function updateTime(listName, index, newTime) {
+      lists[listName][index].datetime = newTime;
+    }
+  </script>
+
+</body>
+</html>
